@@ -1,0 +1,29 @@
+{
+	"name": "pl_set_currentdate",
+	"properties": {
+		"activities": [
+			{
+				"name": "setDataCorrente",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "now",
+					"value": {
+						"value": "@utcnow('yyyy-MM-dd')",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"now": {
+				"type": "String",
+				"defaultValue": "1900-01-01"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-08-25T16:38:59Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

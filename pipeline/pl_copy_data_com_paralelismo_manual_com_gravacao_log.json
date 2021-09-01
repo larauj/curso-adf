@@ -1,0 +1,178 @@
+{
+	"name": "pl_copy_data_com_paralelismo_manual_com_gravacao_log",
+	"properties": {
+		"description": "alternativa para o dynamic range, quando o banco nao oferece suporte ao dynamic range, essa estrategia é interessante para cargas historicas",
+		"activities": [
+			{
+				"name": "getCategories",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT distinct productCategoryId FROM SalesLT.Product",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_sqldb_estudos_leo",
+						"type": "DatasetReference",
+						"parameters": {
+							"schema": " ",
+							"tbName": " "
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ingestionParalell",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "getCategories",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('getCategories').output.value",
+						"type": "Expression"
+					},
+					"batchCount": 4,
+					"activities": [
+						{
+							"name": "Copy data1",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "SELECT * FROM SalesLT.Product WHERE productCategoryId = @{item().productCategoryId}",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_sqldb_estudos_leo",
+									"type": "DatasetReference",
+									"parameters": {
+										"schema": " ",
+										"tbName": " "
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_adls_parquet",
+									"type": "DatasetReference",
+									"parameters": {
+										"container": "bronze",
+										"path": "SalesLT/Product_paralelismo_manual",
+										"fileName": {
+											"value": "file_category_@{item().productCategoryId}.parquet",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "Exception",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ingestionParalell",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_parameters",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"fileName": " "
+					}
+				}
+			},
+			{
+				"name": "GravarLog",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ingestionParalell",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_parameters",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"fileName": " "
+					}
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2021-08-31T14:37:48Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

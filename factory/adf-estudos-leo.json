@@ -1,0 +1,9 @@
+{
+	"name": "adf-estudos-leo",
+	"location": "brazilsouth",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "d7c80a52-a73a-4dc1-84da-2623ff15d692",
+		"tenantId": "c2c4aa37-fd64-4678-ab92-de88c757b613"
+	}
+}

@@ -1,0 +1,33 @@
+{
+	"name": "pl_transform_product",
+	"properties": {
+		"activities": [
+			{
+				"name": "execute_transformation",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Shared/estudos-leo/nb_transform_product",
+					"baseParameters": {
+						"p_data": "20210825"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_databricks",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2021-08-30T19:56:29Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
