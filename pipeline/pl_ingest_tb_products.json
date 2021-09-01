@@ -16,7 +16,7 @@
 				}
 			},
 			{
-				"name": "ingest_product_new",
+				"name": "ingest_product",
 				"type": "Copy",
 				"dependsOn": [
 					{
